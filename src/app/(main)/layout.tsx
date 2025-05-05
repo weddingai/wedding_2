@@ -51,6 +51,7 @@ export default function MainLayout({
   const [expandedCity, setExpandedCity] = useState<number | null>(null);
   // 검색 관련 상태
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 페이지가 변경될 때마다 검색어 초기화
   useEffect(() => {
@@ -90,6 +91,7 @@ export default function MainLayout({
 
   // 모바일 서브 카테고리 클릭 함수
   const handleSubCityClick = (mainCityId: number, subCityId: number) => {
+    setIsDropdownOpen(false);
     setIsMenuOpen(false);
     setExpandedCity(null);
     const mainCity = mainCities.find((city) => city.id === mainCityId);
@@ -122,13 +124,59 @@ export default function MainLayout({
       <header className="sticky top-0 z-40 w-full bg-[#EDE1D7]">
         <div className="flex items-center justify-between h-16 max-w-screen-xl mx-auto px-6">
           {/* 좌측 고정 메뉴 */}
-          <nav className="hidden md:flex items-center space-x-6 text-[13px] text-[#493D32] font-medium">
-            <Link href="#">지역별</Link>
-            <Link href="#">웨딩</Link>
-            <Link href="#">허니문</Link>
-            <Link href="#">스드메</Link>
-            <Link href="#">웨딩홀</Link>
-            <Link href="#">기타</Link>
+          <nav className="hidden md:flex items-center text-[13px] text-[#493D32] font-medium">
+            <div
+              className="relative"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => setIsDropdownOpen(false)}
+            >
+              <button
+                type="button"
+                className="h-16 flex items-center px-3 hover:text-[#9E856F] transition-colors"
+                style={{ fontWeight: 500 }}
+              >
+                지역별
+              </button>
+              {isDropdownOpen && (
+                <div className="fixed left-0 top-16 w-screen bg-white border-t border-gray-200 shadow-lg z-50 px-8 py-8">
+                  <div className="flex flex-wrap gap-x-8 gap-y-6 max-w-screen-xl mx-auto">
+                    {mainCities.map((city) => (
+                      <div key={city.id} className="min-w-[60px] mb-2">
+                        <div className="mb-3 font-bold text-[#493D32] text-lg">
+                          {city.name}
+                        </div>
+                        {subCities[city.id] &&
+                          subCities[city.id].length > 0 && (
+                            <div className="flex flex-col gap-1">
+                              {subCities[city.id].map((subCity) => (
+                                <button
+                                  key={subCity.id}
+                                  onClick={() =>
+                                    handleSubCityClick(city.id, subCity.id)
+                                  }
+                                  className="text-left text-[#6d6253] hover:text-[#9E856F] text-base"
+                                >
+                                  {subCity.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {["웨딩", "허니문", "스드메", "웨딩홀", "기타"].map((label) => (
+              <button
+                key={label}
+                type="button"
+                className="h-16 flex items-center px-3 hover:text-[#9E856F] transition-colors"
+                style={{ fontWeight: 500 }}
+              >
+                {label}
+              </button>
+            ))}
           </nav>
           {/* 중앙 로고 */}
           <div className="flex items-center">
