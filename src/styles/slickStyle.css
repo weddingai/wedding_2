@@ -1,0 +1,29 @@
+/* 슬라이더 화살표의 기본 스타일 */
+.slick-arrow {
+  @apply w-7 h-7 md:w-10 md:h-10 flex items-center justify-center absolute top-1/2 -translate-y-1/2 z-[10] cursor-pointer select-none transition-all opacity-75 bg-white bg-opacity-70 rounded-full;
+}
+
+/* 모든 기본 화살표 아이콘 제거 */
+.slick-arrow:before {
+  display: none !important;
+}
+
+/* 이전 화살표 위치 */
+.slick-prev {
+  left: 20px;
+}
+
+/* 다음 화살표 위치 */
+.slick-next {
+  right: 20px;
+}
+
+/* 호버 효과 */
+.slick-arrow:hover {
+  @apply opacity-90 bg-opacity-90 bg-white;
+}
+
+/* 아이콘 크기 조정 */
+.slick-arrow svg {
+  @apply w-6 h-6;
+}

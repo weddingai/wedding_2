@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /admin
+
+# Sitemap 위치
+Sitemap: https://thewedding.com/sitemap.xml 
