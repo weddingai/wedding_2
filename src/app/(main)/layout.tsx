@@ -292,7 +292,7 @@ export default function MainLayout({
       </header>
 
       {/* children 렌더링 */}
-      <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 py-8">
+      <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 py-8 bg-[#FFF8F2]">
         {children}
       </main>
 
