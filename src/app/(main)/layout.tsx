@@ -121,7 +121,7 @@ export default function MainLayout({
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#FFF8F2]">
       <StructuredDataScript />
 
       {/* 헤더 */}
