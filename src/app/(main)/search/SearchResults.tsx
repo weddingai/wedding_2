@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
 import { searchFairs, Fair } from "@/api";
-import { Calendar, MapPin } from "lucide-react";
+import { FairCard } from "@/components";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
@@ -61,7 +59,7 @@ export default function SearchResults() {
       <h1 className="text-2xl font-bold mb-2">검색 결과</h1>
       <p className="text-gray-600 mb-6">
         {query
-          ? `“${query}”에 대한 검색 결과 ${totalCount}건`
+          ? `"${query}"에 대한 검색 결과 ${totalCount}건`
           : type
           ? `${type} 타입의 박람회 ${totalCount}건`
           : "검색 결과가 없습니다."}
@@ -78,46 +76,11 @@ export default function SearchResults() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {searchResults.map((fair) => (
-              <Link href={`/fair/${fair.id}`} key={fair.id}>
-                <div className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="h-48 bg-gray-200 relative">
-                    {fair.image_url ? (
-                      <Image
-                        src={fair.image_url}
-                        alt={fair.title}
-                        className="w-full h-full object-cover"
-                        width={500}
-                        height={300}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        이미지 없음
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h2 className="font-bold text-lg mb-2">{fair.title}</h2>
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span className="text-sm">{fair.address}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      <span className="text-sm">
-                        {fair.start_date.split("T")[0]} ~{" "}
-                        {fair.end_date.split("T")[0]}
-                      </span>
-                    </div>
-                    <div className="mt-3 text-sm">
-                      <span className="inline-block bg-gray-100 rounded-full px-3 py-1 text-gray-700">
-                        {fair.type || "전시"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <div key={fair.id}>
+                <FairCard fair={fair} />
+              </div>
             ))}
           </div>
 
