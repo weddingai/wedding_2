@@ -10,6 +10,7 @@ import { Calendar, MapPin } from "lucide-react";
 export default function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query") || "";
+  const type = searchParams.get("type") || "";
 
   const [searchResults, setSearchResults] = useState<Fair[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,8 +20,11 @@ export default function SearchResults() {
 
   useEffect(() => {
     const fetchSearchResults = async () => {
-      if (!query) {
+      if (!query && !type) {
         setIsLoading(false);
+        setSearchResults([]);
+        setTotalCount(0);
+        setTotalPages(1);
         return;
       }
 
@@ -28,6 +32,7 @@ export default function SearchResults() {
         setIsLoading(true);
         const result = await searchFairs({
           search: query,
+          type: type || undefined,
           page: currentPage.toString(),
           size: "12",
         });
@@ -43,7 +48,7 @@ export default function SearchResults() {
     };
 
     fetchSearchResults();
-  }, [query, currentPage]);
+  }, [query, type, currentPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -55,7 +60,11 @@ export default function SearchResults() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-2">검색 결과</h1>
       <p className="text-gray-600 mb-6">
-        &ldquo;{query}&rdquo;에 대한 검색 결과 {totalCount}건
+        {query
+          ? `“${query}”에 대한 검색 결과 ${totalCount}건`
+          : type
+          ? `${type} 타입의 박람회 ${totalCount}건`
+          : "검색 결과가 없습니다."}
       </p>
 
       {isLoading ? (
@@ -97,7 +106,8 @@ export default function SearchResults() {
                     <div className="flex items-center text-gray-600">
                       <Calendar className="w-4 h-4 mr-1" />
                       <span className="text-sm">
-                        {fair.start_date} ~ {fair.end_date}
+                        {fair.start_date.split("T")[0]} ~{" "}
+                        {fair.end_date.split("T")[0]}
                       </span>
                     </div>
                     <div className="mt-3 text-sm">

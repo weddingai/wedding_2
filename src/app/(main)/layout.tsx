@@ -53,6 +53,10 @@ export default function MainLayout({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const handleTypeMenuClick = (type: string) => {
+    router.push(`/search?type=${encodeURIComponent(type)}`);
+  };
+
   // 페이지가 변경될 때마다 검색어 초기화
   useEffect(() => {
     setSearchQuery("");
@@ -167,12 +171,13 @@ export default function MainLayout({
                 </div>
               )}
             </div>
-            {["웨딩", "허니문", "스드메", "웨딩홀", "기타"].map((label) => (
+            {["웨딩", "웨딩홀", "허니문", "스드메", "기타"].map((label) => (
               <button
                 key={label}
                 type="button"
                 className="h-16 flex items-center px-3 hover:text-[#9E856F] transition-colors"
                 style={{ fontWeight: 500 }}
+                onClick={() => handleTypeMenuClick(label)}
               >
                 {label}
               </button>
