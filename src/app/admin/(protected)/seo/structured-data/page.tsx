@@ -20,20 +20,7 @@ export default function StructuredDataManagement() {
         const res = await getSitesList();
         setSites(res.sites);
         if (res.sites.length > 0) {
-          setSelectedSite(res.sites[0].id);
-          try {
-            // structured_data가 문자열이면 파싱하고, 객체면 그대로 사용
-            const data =
-              typeof res.sites[0].structured_data === "string"
-                ? JSON.parse(res.sites[0].structured_data)
-                : res.sites[0].structured_data;
-            // null이나 undefined가 아닌 경우에만 JSON.stringify 실행
-            setJsonData(data ? JSON.stringify(data, null, 2) : "");
-          } catch (err) {
-            // 파싱 에러가 발생하면 원본 데이터를 그대로 표시
-            setJsonData(res.sites[0].structured_data || "");
-            console.error("구조화 데이터 파싱 중 오류:", err);
-          }
+          setSelectedSite(res.sites[0].id.toString());
         }
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -49,22 +36,42 @@ export default function StructuredDataManagement() {
   }, []);
 
   useEffect(() => {
-    if (!selectedSite || sites.length === 0) return;
-    const site = sites.find((s) => s.id === selectedSite);
-    try {
-      // structured_data가 문자열이면 파싱하고, 객체면 그대로 사용
-      const data =
-        typeof site?.structured_data === "string"
-          ? JSON.parse(site.structured_data)
-          : site?.structured_data;
-      // null이나 undefined가 아닌 경우에만 JSON.stringify 실행
-      setJsonData(data ? JSON.stringify(data, null, 2) : "");
-    } catch (err) {
-      // 파싱 에러가 발생하면 원본 데이터를 그대로 표시
-      setJsonData(site?.structured_data || "");
-      console.error("구조화 데이터 파싱 중 오류:", err);
-    }
-  }, [selectedSite, sites]);
+    const fetchStructuredData = async () => {
+      if (!selectedSite || sites.length === 0) return;
+
+      setLoading(true);
+      setError("");
+      try {
+        const res = await getSitesList();
+        const site = res.sites.find((s) => s.id.toString() === selectedSite);
+        if (site) {
+          try {
+            // structured_data가 문자열이면 파싱하고, 객체면 그대로 사용
+            const data =
+              typeof site.structured_data === "string"
+                ? JSON.parse(site.structured_data)
+                : site.structured_data;
+            // null이나 undefined가 아닌 경우에만 JSON.stringify 실행
+            setJsonData(data ? JSON.stringify(data, null, 1) : "");
+          } catch (err) {
+            // 파싱 에러가 발생하면 원본 데이터를 그대로 표시
+            setJsonData(site.structured_data || "");
+            console.error("구조화 데이터 파싱 중 오류:", err);
+          }
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError("구조화 데이터를 불러오지 못했습니다: " + err.message);
+        } else {
+          setError("구조화 데이터를 불러오지 못했습니다.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStructuredData();
+  }, [selectedSite]);
 
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setJsonData(e.target.value);
