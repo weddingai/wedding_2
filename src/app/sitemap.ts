@@ -11,7 +11,7 @@ type UrlEntry = {
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteId = "1";
+  const siteId = "2";
 
   try {
     const xmlString = await getSitemapXml(siteId);

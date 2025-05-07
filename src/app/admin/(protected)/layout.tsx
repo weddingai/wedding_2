@@ -51,7 +51,7 @@ export default function ProtectedLayout({
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/admin/dashboard" className="flex-shrink-0">
-              <h1 className="text-xl font-bold">THEWEDDING</h1>
+              <h1 className="text-xl font-bold">MY WEDDING</h1>
             </Link>
           </div>
         </div>

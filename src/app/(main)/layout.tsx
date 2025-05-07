@@ -15,7 +15,7 @@ function StructuredDataScript() {
   useEffect(() => {
     const fetchStructuredData = async () => {
       try {
-        const { structured_data } = await getStructuredData("1");
+        const { structured_data } = await getStructuredData("2");
         setStructuredData(structured_data);
       } catch (err) {
         console.error("구조화 데이터 로딩 중 오류:", err);

@@ -23,7 +23,7 @@ export default function SeoManagement() {
       setLoading(true);
       setError("");
       try {
-        const data = await getMetaTags(1);
+        const data = await getMetaTags(2);
         setMeta({
           meta_title: data.meta_title || "",
           meta_description: data.meta_description || "",
@@ -56,7 +56,7 @@ export default function SeoManagement() {
     setSaving(true);
     setError("");
     try {
-      await updateMetaTags(1, meta);
+      await updateMetaTags(2, meta);
       window.alert("메타태그 정보가 저장되었습니다.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "저장에 실패했습니다.";

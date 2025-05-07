@@ -12,7 +12,7 @@ const notoSansKr = Noto_Sans_KR({
 // 동적 메타데이터 생성
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const meta = await getPublicMetaTags(1);
+    const meta = await getPublicMetaTags(2);
     return {
       title: meta.meta_title,
       description: meta.meta_description,
