@@ -61,7 +61,7 @@ export default function SearchResults() {
         {query
           ? `"${query}"에 대한 검색 결과 ${totalCount}건`
           : type
-          ? `${type} 타입의 박람회 ${totalCount}건`
+          ? `${type} 박람회 ${totalCount}건`
           : "검색 결과가 없습니다."}
       </p>
 
