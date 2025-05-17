@@ -305,8 +305,8 @@ export default function FairsManagement() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {fair.start_date.split("T")[0]} ~{" "}
-                      {fair.end_date.split("T")[0]}
+                      {fair.start_date.split('T')[0]} ~{' '}
+                      {fair.end_date.split('T')[0]}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -328,14 +328,13 @@ export default function FairsManagement() {
                             title: fair.title,
                             category1: fair.category1,
                             category2: fair.category2,
-                            start_date: fair.start_date.split("T")[0],
-                            end_date: fair.end_date.split("T")[0],
+                            start_date: fair.start_date.split('T')[0],
+                            end_date: fair.end_date.split('T')[0],
                             redirect_url: fair.redirect_url,
                             address: fair.address,
                             description: fair.description,
                             promotion: fair.promotion,
                             image_url: fair.image_url,
-                            hash: fair.hash,
                             type: fair.type,
                           },
                         })
