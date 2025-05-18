@@ -121,7 +121,7 @@ export default function SitemapViewer() {
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              사이트맵 XML {editMode ? "수정" : "미리보기"}
+              사이트맵 XML {editMode ? '수정' : '미리보기'}
             </label>
             {editMode ? (
               <>
@@ -139,7 +139,7 @@ export default function SitemapViewer() {
                     onClick={handleSave}
                     disabled={saving}
                   >
-                    {saving ? "저장 중..." : "저장"}
+                    {saving ? '저장 중...' : '저장'}
                   </button>
                   <button
                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
@@ -172,7 +172,7 @@ export default function SitemapViewer() {
             )}
             <p className="mt-1 text-sm text-gray-500">
               사이트맵은 DB에 저장된 XML을 그대로 보여주며, 직접 수정 및 저장이
-              가능합니다.
+              가능합니다. 수정일자를 생략하면 매일 2시로 설정됩니다.
             </p>
           </div>
         </div>
