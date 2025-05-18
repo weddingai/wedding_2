@@ -4,38 +4,8 @@ import Link from "next/link";
 import { Menu, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { getStructuredData } from "@/api/seoApi";
-import Script from "next/script";
-import { City, getMainCities, getAllSubCities } from "@/api";
-
-// 구조화 데이터를 가져오는 클라이언트 컴포넌트
-function StructuredDataScript() {
-  const [structuredData, setStructuredData] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchStructuredData = async () => {
-      try {
-        const { structured_data } = await getStructuredData("2");
-        setStructuredData(structured_data);
-      } catch (err) {
-        console.error("구조화 데이터 로딩 중 오류:", err);
-      }
-    };
-
-    fetchStructuredData();
-  }, []);
-
-  if (!structuredData) return null;
-
-  return (
-    <Script
-      id="structured-data"
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: structuredData }}
-      strategy="afterInteractive"
-    />
-  );
-}
+import { City, getMainCities, getAllSubCities } from '@/api';
+import classNames from 'classnames';
 
 export default function MainLayout({
   children,
@@ -44,68 +14,114 @@ export default function MainLayout({
 }>) {
   const router = useRouter();
   const pathname = usePathname();
-  // 모바일 메뉴 관련 상태 복구
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mainCities, setMainCities] = useState<City[]>([]);
   const [subCities, setSubCities] = useState<{ [key: number]: City[] }>({});
   const [expandedCity, setExpandedCity] = useState<number | null>(null);
-  // 검색 관련 상태
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleTypeMenuClick = (type: string) => {
-    router.push(`/search?type=${encodeURIComponent(type)}`);
-  };
+  // 검색 관련 상태
+  const [searchQuery, setSearchQuery] = useState('');
 
   // 페이지가 변경될 때마다 검색어 초기화
   useEffect(() => {
-    setSearchQuery("");
+    setSearchQuery('');
   }, [pathname]);
 
-  // mainCities, subCities fetch 복구
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
+
+        // 메인 도시 가져오기
         const citiesData = await getMainCities();
         setMainCities(citiesData);
+
+        // 한 번의 API 호출로 모든 서브 카테고리 데이터를 가져옵니다
         const allSubCitiesData = await getAllSubCities();
+
+        // 메인 도시 배열 생성 (정렬을 위해)
         const mainCitiesArray: City[] = [];
         const subCitiesData: { [key: number]: City[] } = {};
+
+        // 응답 데이터를 순회하며 필요한 형태로 변환
         for (const [cityIdStr, cityData] of Object.entries(allSubCitiesData)) {
           const cityId = parseInt(cityIdStr);
+
+          // 메인 도시 배열에 추가
           mainCitiesArray.push({
             id: cityId,
             name: cityData.name,
           });
+
+          // 서브 도시 데이터 설정
           subCitiesData[cityId] = cityData.sub_cities;
         }
+
         setMainCities(mainCitiesArray);
         setSubCities(subCitiesData);
       } catch (error) {
-        console.error("데이터 가져오기 오류:", error);
+        console.error('데이터 가져오기 오류:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
-  // 모바일 메뉴 토글 함수
-  const handleMobileMenuClick = (cityId: number) => {
-    setExpandedCity(expandedCity === cityId ? null : cityId);
+  const handleMouseEnter = (cityId: number) => {
+    setActiveDropdown(cityId);
   };
 
-  // 모바일 서브 카테고리 클릭 함수
+  const handleMouseLeave = () => {
+    setActiveDropdown(null);
+  };
+
+  const handleCityClick = (cityId: number) => {
+    // 모바일 메뉴가 열려있으면 닫기
+    setIsMenuOpen(false);
+    setActiveDropdown(null);
+
+    // 약간의 지연을 두어 메뉴 닫힘 애니메이션이 완료되도록 함
+    setTimeout(() => {
+      const element = document.getElementById(`city-${cityId}`);
+      if (element) {
+        // 헤더 높이를 디바이스에 따라 조정
+        const headerOffset = window.innerWidth < 768 ? 120 : 96;
+
+        // 모바일에서는 window.pageYOffset 대신 window.scrollY 사용
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      }
+    }, 100);
+  };
+
   const handleSubCityClick = (mainCityId: number, subCityId: number) => {
-    setIsDropdownOpen(false);
+    // 활성 드롭다운 닫기
+    setActiveDropdown(null);
+    // 모바일
     setIsMenuOpen(false);
     setExpandedCity(null);
+
+    // 필요한 데이터 찾기
     const mainCity = mainCities.find((city) => city.id === mainCityId);
     const subCity = subCities[mainCityId]?.find(
       (city) => city.id === subCityId
     );
+
     if (!mainCity || !subCity) {
-      console.error("카테고리 정보를 찾을 수 없습니다.");
+      console.error('카테고리 정보를 찾을 수 없습니다.');
       return;
     }
+
+    // 서브 카테고리 페이지로 이동
     router.push(
       `/detail?main=${mainCity.name}&sub=${subCity.name}&mainName=${mainCity.name}&subName=${subCity.name}`
     );
@@ -114,120 +130,97 @@ export default function MainLayout({
   // 검색 처리 함수
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchQuery("");
+
+    setSearchQuery('');
+    setIsMenuOpen(false);
     if (!searchQuery.trim()) return;
+
     // 검색 결과 페이지로 이동
     router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
   };
 
-  return (
-    <div className="flex flex-col min-h-screen bg-[#FFF8F2]">
-      <StructuredDataScript />
+  const handleMobileMenuClick = (cityId: number) => {
+    setExpandedCity(expandedCity === cityId ? null : cityId);
+  };
 
+  return (
+    <div className="flex flex-col min-h-screen">
       {/* 헤더 */}
-      <header className="sticky top-0 z-40 w-full bg-[#EDE1D7]">
-        <div className="flex items-center justify-between h-16 max-w-screen-xl mx-auto px-6">
-          {/* 좌측 고정 메뉴 */}
-          <nav className="hidden md:flex items-center text-[13px] text-[#493D32] font-medium">
-            <div
-              className="relative"
-              onMouseEnter={() => setIsDropdownOpen(true)}
-              onMouseLeave={() => setIsDropdownOpen(false)}
-            >
-              <button
-                type="button"
-                className="h-16 flex items-center px-3 hover:text-[#9E856F] transition-colors"
-                style={{ fontWeight: 500 }}
-              >
-                지역별
-              </button>
-              {isDropdownOpen && (
-                <div className="fixed left-0 top-16 w-screen bg-white border-t border-gray-200 shadow-lg z-50 px-8 py-8">
-                  <div className="flex flex-wrap gap-x-8 gap-y-6 max-w-screen-xl mx-auto">
-                    {mainCities.map((city) => (
-                      <div key={city.id} className="min-w-[60px] mb-2">
-                        <div className="mb-3 font-bold text-[#493D32] text-lg">
-                          {city.name}
-                        </div>
-                        {subCities[city.id] &&
-                          subCities[city.id].length > 0 && (
-                            <div className="flex flex-col gap-1">
-                              {subCities[city.id].map((subCity) => (
-                                <button
-                                  key={subCity.id}
-                                  onClick={() =>
-                                    handleSubCityClick(city.id, subCity.id)
-                                  }
-                                  className="text-left text-[#6d6253] hover:text-[#9E856F] text-base"
-                                >
-                                  {subCity.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            {["웨딩", "웨딩홀", "허니문", "스드메", "기타"].map((label) => (
-              <button
-                key={label}
-                type="button"
-                className="h-16 flex items-center px-3 hover:text-[#9E856F] transition-colors"
-                style={{ fontWeight: 500 }}
-                onClick={() => handleTypeMenuClick(label)}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-          {/* 중앙 로고 */}
-          <div className="flex items-center">
+      <header className="sticky top-0 z-40 w-full bg-white shadow">
+        <div className="container mx-auto px-4">
+          {/* 로고 섹션 */}
+          <div className="flex items-center justify-start py-4">
             <Link href="/" className="flex-shrink-0">
-              <span className="text-2xl font-black text-[#9E856F]">
-                MYWEDDING
-              </span>
+              <h1 className="text-2xl md:text-3xl font-bold">THEWEDDING</h1>
             </Link>
           </div>
-          {/* 검색창 */}
-          <div className="relative hidden md:flex items-center flex-grow ml-4 md:ml-8 max-w-sm">
-            <form onSubmit={handleSearch} className="w-full flex">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="박람회 이름으로 검색"
-                  className="w-full py-2 px-4 pr-10 border-b-2 bg-[#EDE1D7] border-[#493D32] focus:outline-none placeholder:text-sm placeholder:text-[#A09183]"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-0 top-1/2 transform -translate-y-1/2 px-3 text-[#493D32]"
-                  aria-label="검색"
+
+          {/* 메뉴 섹션 */}
+          <div className="flex items-center justify-between h-16 border-b relative">
+            {/* 데스크탑 네비게이션 */}
+            <nav className="hidden md:flex h-full items-center space-x-1 flex-shrink-0">
+              {mainCities.map((city) => (
+                <div
+                  key={city.id}
+                  className="relative h-full"
+                  onMouseEnter={() => handleMouseEnter(city.id)}
+                  onMouseLeave={handleMouseLeave}
                 >
-                  <Search className="h-5 w-5" />
-                </button>
-              </div>
-            </form>
-          </div>
-          {/* 모바일 메뉴 버튼 */}
-          <div className="flex md:hidden items-center ml-2 flex-shrink-0">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 md:hidden rounded-full hover:bg-gray-100"
-              aria-label="메뉴"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-        {/* 모바일 메뉴 - header 태그 안에 위치 */}
-        {isMenuOpen && (
-          <nav className="fixed top-16 left-0 w-full z-50 bg-white border-t border-gray-200 shadow-lg md:hidden py-4 px-4 space-y-2">
-            <div className="relative flex items-center flex-grow md:ml-8">
-              <form onSubmit={handleSearch} className="w-full flex mb-4">
+                  <button
+                    onClick={() => handleCityClick(city.id)}
+                    className={classNames(
+                      'h-full text-sm text-gray-700 px-2  whitespace-nowrap hover:text-black',
+                      activeDropdown === city.id && 'border-b-4 border-black'
+                    )}
+                  >
+                    {city.name}
+                  </button>
+
+                  {/* 드롭다운 메뉴 */}
+                  {activeDropdown === city.id && (
+                    <div className="absolute left-0 top-full w-48 bg-white shadow-lg rounded-b-md py-2 z-10">
+                      {isLoading ? (
+                        <div className="px-4 py-2 text-sm text-gray-500">
+                          로딩 중...
+                        </div>
+                      ) : subCities[city.id] &&
+                        subCities[city.id].length > 0 ? (
+                        subCities[city.id].map((subCity) => (
+                          <button
+                            key={subCity.id}
+                            onClick={() =>
+                              handleSubCityClick(city.id, subCity.id)
+                            }
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            {subCity.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm text-gray-500">
+                          현재 지역에서 열리는 박람회가 없습니다
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            {/* 모바일 메뉴 버튼 */}
+            <div className="flex items-center ml-2 flex-shrink-0">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 md:hidden rounded-full hover:bg-gray-100"
+                aria-label="메뉴"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 검색창 */}
+            <div className="relative hidden md:flex items-center flex-grow ml-4 md:ml-8 max-w-sm">
+              <form onSubmit={handleSearch} className="w-full flex">
                 <div className="relative w-full">
                   <input
                     type="text"
@@ -246,55 +239,81 @@ export default function MainLayout({
                 </div>
               </form>
             </div>
-            {mainCities.map((city) => (
-              <div
-                key={city.id}
-                className="border-b border-gray-100 last:border-b-0"
-              >
-                <button
-                  onClick={() => handleMobileMenuClick(city.id)}
-                  className="flex items-center justify-between w-full py-3 px-2 text-gray-700 hover:text-black"
-                >
-                  <span>{city.name}</span>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${
-                      expandedCity === city.id ? "transform rotate-180" : ""
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
+          </div>
+
+          {/* 모바일 메뉴 */}
+          {isMenuOpen && (
+            <nav className="md:hidden py-4 px-4 space-y-2 bg-white border-t">
+              <div className="relative flex items-center flex-grow md:ml-8">
+                <form onSubmit={handleSearch} className="w-full flex mb-4">
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="박람회 이름으로 검색"
+                      className="w-full py-2 px-4 pr-10 border-b-2 border-gray-200 focus:border-gray-500 focus:outline-none placeholder:text-sm"
                     />
-                  </svg>
-                </button>
-                {expandedCity === city.id && subCities[city.id] && (
-                  <div className="pl-4 py-2 bg-gray-50">
-                    {subCities[city.id].map((subCity) => (
-                      <button
-                        key={subCity.id}
-                        onClick={() => handleSubCityClick(city.id, subCity.id)}
-                        className="block w-full text-left py-2 px-2 text-gray-600 hover:text-black text-sm"
-                      >
-                        {subCity.name}
-                      </button>
-                    ))}
+                    <button
+                      type="submit"
+                      className="absolute right-0 top-1/2 transform -translate-y-1/2 px-3 text-gray-600"
+                      aria-label="검색"
+                    >
+                      <Search className="h-5 w-5" />
+                    </button>
                   </div>
-                )}
+                </form>
               </div>
-            ))}
-          </nav>
-        )}
+              {mainCities.map((city) => (
+                <div
+                  key={city.id}
+                  className="border-b border-gray-100 last:border-b-0"
+                >
+                  <button
+                    onClick={() => handleMobileMenuClick(city.id)}
+                    className="flex items-center justify-between w-full py-3 px-2 text-gray-700 hover:text-black"
+                  >
+                    <span>{city.name}</span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${
+                        expandedCity === city.id ? 'transform rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {expandedCity === city.id && subCities[city.id] && (
+                    <div className="pl-4 py-2 bg-gray-50">
+                      {subCities[city.id].map((subCity) => (
+                        <button
+                          key={subCity.id}
+                          onClick={() =>
+                            handleSubCityClick(city.id, subCity.id)
+                          }
+                          className="block w-full text-left py-2 px-2 text-gray-600 hover:text-black text-sm"
+                        >
+                          {subCity.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+          )}
+        </div>
       </header>
 
-      {/* children 렌더링 */}
-      <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 py-8 bg-[#FFF8F2]">
-        {children}
-      </main>
+      {/* 메인 콘텐츠 */}
+      <main className="flex-grow">{children}</main>
 
       {/* 푸터 */}
       <footer className="bg-gray-900 text-white py-10">
