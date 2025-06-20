@@ -19,17 +19,17 @@ export const FairCard = ({ fair }: FairCardProps) => {
 
   return (
     <a
-      href={fair.redirect_url}
+      href={`${fair.redirect_url}ddayspot365`}
       target="_blank"
       rel="noopener noreferrer"
-      style={{ filter: "drop-shadow(3px 3px 4px #BBBBBB)" }}
+      style={{ filter: 'drop-shadow(3px 3px 4px #BBBBBB)' }}
       className="block h-full"
     >
       <div
         className="bg-[#FFFEF8] border p-6 md:p-7 min-h-[420px] flex flex-col"
         style={{
           clipPath:
-            "polygon(24px 0, calc(100% - 24px) 0, 100% 24px, 100% calc(100% - 24px), calc(100% - 24px) 100%, 24px 100%, 0 calc(100% - 24px), 0 24px)",
+            'polygon(24px 0, calc(100% - 24px) 0, 100% 24px, 100% calc(100% - 24px), calc(100% - 24px) 100%, 24px 100%, 0 calc(100% - 24px), 0 24px)',
         }}
       >
         <div className="overflow-hidden mb-4">
@@ -51,7 +51,7 @@ export const FairCard = ({ fair }: FairCardProps) => {
         </div>
         <div className="mb-2">
           <span className="inline-block bg-gray-100 rounded-full px-2 py-1 text-xs text-gray-700">
-            {fair.type || "전시"}
+            {fair.type || '전시'}
           </span>
         </div>
         <h3 className="text-base font-semibold mb-3 text-[#493D32] line-clamp-1">
