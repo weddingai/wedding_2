@@ -7,18 +7,19 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 // 관리자 메뉴 아이템
 const adminMenuItems = [
-  { title: "대시보드", href: "/admin/dashboard", icon: <LayoutDashboard /> },
+  { title: '대시보드', href: '/admin/dashboard', icon: <LayoutDashboard /> },
   {
-    title: "SEO 관리",
-    href: "/admin/seo/meta",
+    title: 'SEO 관리',
+    href: '/admin/seo/meta',
     icon: <Search />,
     subItems: [
-      { title: "메타 태그", href: "/admin/seo/meta" },
-      { title: "구조화 데이터", href: "/admin/seo/structured-data" },
-      { title: "사이트맵", href: "/admin/seo/sitemap" },
+      { title: '메타 태그', href: '/admin/seo/meta' },
+      { title: '구조화 데이터', href: '/admin/seo/structured-data' },
+      { title: '사이트맵', href: '/admin/seo/sitemap' },
+      { title: '서치 콘솔', href: '/admin/search-console' },
     ],
   },
-  { title: "박람회 관리", href: "/admin/fairs", icon: <Calendar /> },
+  { title: '박람회 관리', href: '/admin/fairs', icon: <Calendar /> },
 ];
 
 export default function ProtectedLayout({
