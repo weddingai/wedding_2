@@ -143,6 +143,18 @@ export interface MetaTags {
   og_description: string;
   og_image: string;
   og_url: string;
+  google_verification?: string;
+  naver_verification?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// 서치 콘솔 확인 코드 타입
+export interface SearchConsoleVerification {
+  id?: number;
+  site_id?: string;
+  google_verification?: string;
+  naver_verification?: string;
   created_at?: string;
   updated_at?: string;
 }
